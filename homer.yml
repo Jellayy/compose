@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    networks:
+      - proxy
+    volumes:
+      - /home/admin/docker/homer:/www/assets
+    user: 1000:1000
+    environment:
+      - INIT_ASSETS=1
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.homer.rule=Host(`homer.site`)"
+      - "traefik.http.routers.homer.entrypoints=https"
+      - "traefik.http.routers.homer.tls=true"
+      - "traefik.http.services.homer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.homer.tls.certresolver=letsEncrypt"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

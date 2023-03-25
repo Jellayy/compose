@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  web:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: gitlab.site
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitlab.rule=Host(`gitlab.site`)"
+      - "traefik.http.routers.gitlab.entrypoints=https"
+      - "traefik.http.routers.gitlab.tls=true"
+      - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+      - "traefik.http.routers.gitlab.tls.certresolver=letsEncrypt"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.site'
+        nginx['redirect_http_to_https'] = false
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        #nginx['proxy_set_headers'] = {
+        #  'X-Forwarded-Proto' => 'https',
+        #  'X-Forwarded-Ssl' => 'on'
+        #}
+        nginx['client_max_body_size'] = '2G'
+        postgresql['shared_buffers'] = "512MB"
+        gitlab_rails['artifacts_enabled'] = true
+        gitlab_rails['artifacts_path'] = "/var/opt/gitlab/gitlab-artifacts"
+        gitlab_rails['lfs_enabled'] = true
+        gitlab_rails['backup_keep_time'] = 172600
+        gitlab_ci['backup_keep_time'] = 172600
+        gitlab_rails['time_zone'] = "America/Phoenix"
+    ports:
+      - '2222:22'
+    volumes:
+      - /home/admin/docker/gitlab-test/config:/etc/gitlab
+      - /home/admin/docker/gitlab-test/logs:/var/log/gitlab
+      - /home/admin/docker/gitlab-test/data:/var/opt/gitlab
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  gitlab-runner:
+    container_name: gitlab-runner
+    restart: always
+    volumes:
+      - '/home/admin/docker/gitlab-runner:/etc/gitlab-runner'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    image: 'gitlab/gitlab-runner:latest'
+
+# EXEC: gitlab-ci-multi-runner register

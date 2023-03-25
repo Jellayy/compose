@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  filezilla:
+    image: lscr.io/linuxserver/filezilla:latest
+    container_name: filezilla
+    networks:
+      - proxy
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Phoenix
+    volumes:
+      - /home/admin/docker/filezilla:/config
+      - /folder1:/folder1
+      - /folder2:/folder2
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.filezilla.rule=Host(`filezilla.site`)"
+      - "traefik.http.routers.filezilla.entrypoints=https"
+      - "traefik.http.routers.filezilla.tls=true"
+      - "traefik.http.services.filezilla.loadbalancer.server.port=3000"
+      - "traefik.http.routers.filezilla.tls.certresolver=letsEncrypt"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

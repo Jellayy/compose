@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    networks:
+      - proxy
+    volumes:
+      - /home/admin/docker/grafana/grafana-data:/grafana-data
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.site`)"
+      - "traefik.http.routers.grafana.entrypoints=https"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana.tls.certresolver=letsEncrypt"
+      - "traefik.http.routers.grafana.middlewares=authelia@docker"
+    restart: unless-stopped
+
+  influxdb:
+    container_name: grafana-influxdb2
+    image: influxdb:latest
+    networks:
+      - proxy
+    volumes:
+      - /home/admin/docker/grafana/influxdb2-data:/var/lib/influxdb2
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.influx.rule=Host(`influx.site`)"
+      - "traefik.http.routers.influx.entrypoints=https"
+      - "traefik.http.routers.influx.tls=true"
+      - "traefik.http.services.influx.loadbalancer.server.port=8086"
+      - "traefik.http.routers.influx.tls.certresolver=letsEncrypt"
+      - "traefik.http.routers.influx.middlewares=authelia@docker"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

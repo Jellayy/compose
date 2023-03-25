@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    container_name: wordpress-mariadb
+    networks:
+      - proxy
+    restart: always
+    command: '--default-authentication-plugin=mysql_native_password'
+    volumes:
+      - /home/admin/docker/wordpress/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: xxx
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: xxx
+      MYSQL_DATABASE: wordpress
+
+  app:
+    image: wordpress
+    container_name: wordpress
+    networks:
+      - proxy
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: xxx
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - /home/admin/docker/wordpress/wordpress:/var/www/html
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress.rule=Host(`wordpress.site`)"
+      - "traefik.http.routers.wordpress.entrypoints=https"
+      - "traefik.http.routers.wordpress.tls=true"
+      - "traefik.http.services.wordpress.loadbalancer.server.port=80"
+      - "traefik.http.routers.wordpress.tls.certresolver=letsEncrypt"
+
+networks:
+  proxy:
+    external: true

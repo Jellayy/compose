@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  filebrowser:
+    image: hurlenko/filebrowser
+    networks:
+      - proxy
+    user: "1000:1000"
+    volumes:
+      - /folder1:/data/folder1
+      - /folder2:/data/folder2
+      - /home/admin/docker/filebrowser:/config
+    restart: always
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.rule=Host(`filebrowser.site`)"
+      - "traefik.http.routers.filebrowser.entrypoints=https"
+      - "traefik.http.routers.filebrowser.tls=true"
+      - "traefik.http.services.filebrowser.loadbalancer.server.port=8080"
+      - "traefik.http.routers.filebrowser.tls.certresolver=letsEncrypt"
+
+networks:
+  proxy:
+    external: true
