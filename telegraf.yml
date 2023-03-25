@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  telegraf:
+    image: telegraf:1.25-alpine
+    container_name: telegraf
+    # Run `stat -c '%g' /var/run/docker.sock` to find docker group number
+    user: telegraf:998
+    volumes:
+      - /:/hostfs:ro # Hostfs for monitoring
+      - /home/admin/docker/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro # Config file
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Docker sock for docker monitoring
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
